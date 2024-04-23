@@ -1,0 +1,102 @@
+---
+title: "garrettsfinalrmd"
+author: "Garrett Weems"
+date: "2024-04-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Mediterranean Diet 
+Garrett Weems
+2024
+
+## Introduction
+A trip to the grocery store may be a worthwhile experience; you are preparing to do something that will save you money and provide nutrition for you and your loved ones. You consider healthy eating but are confused by the absurd amount of recommendations you have heard through the media. "The basic principles of good diets are so simple that I can summarize them in just ten words: eat less, move more, eat lots of fruits and vegetables." It seems that the Mediterranean diet fits the bill. 
+
+### My Approach
+Determine if people who eat in the Mediterannean pattern have better overall health by looking at things that are said to be lower upon following it such as BMI and chronic heart disease. 
+
+
+## Data
+
+In 2020, researchers Amato et. al investigated the eating patterns of people who had heart problems and compared them with those without. The data includes how often these participants (mostly men) ate foods such as canned fish, specific fruits and vegetables, simple pastas, etc. 
+
+```{r}
+library("dplyr")#needed so I can mutate with foods consumed with a total fruits and vegetables amount. 
+library("tidyr")#since each observation is a row
+library("ggplot2")#useful for my plotting of the data 
+library("readxl")#needed to read the excel files 
+suppressWarnings({ 
+}) 
+```
+
+## What is the BMI for the Participants? 
+
+```{r}
+med_clinical_data <- read_excel("clinical_data.xlsx")
+BMI <- med_clinical_data %>% 
+  select(BMI) %>% 
+  na.omit()
+average_BMI <- summarize(BMI, average_BMI = mean(BMI))
+```
+
+## How Much Pasta did these People Eat?
+
+```{r}
+food_data <- read_excel("food_grams.xls")
+
+pasta_measurements <- c(2:11)
+total_amounts<- food_data %>% 
+  summarize(average_amount_pasta_eaten = mean(Pasta) )  #In grams
+```
+
+## How Much Meat did the Average Person Eat?
+
+``` {r}
+meat_measurements <- 47:164
+
+total_amounts <- food_data %>% 
+  mutate(average_amount_meat_eaten = rowMeans(select(., meat_measurements)))
+average_meat <- total_amounts %>%
+  summarize(average_meat_eaten = mean(average_amount_meat_eaten))
+print(average_meat)
+```
+
+## What Correlation is there Between Heart-Healthy Foods Eaten and Heart Health?
+
+Both tomatoes and olive oil are foods that are associated with heart health due to their high levels of micronutrients called flavanoids, so...
+```{r, echo = FALSE}
+heart_healthy_food <- food_data %>%
+  select(23) 
+  
+clinical_data <- read_excel("clinical_data.xlsx") 
+total_bad_cholesteral <- clinical_data %>% 
+  select(21) 
+
+ng = aes(x = heart_healthy_food, y = total_bad_cholesteral)
+
+heart_healthy_food <- as.numeric(unlist(heart_healthy_food))
+total_bad_cholesteral <- as.numeric(unlist(total_bad_cholesteral))
+
+heart_df <- data.frame(heart_healthy_food, total_bad_cholesteral) %>% 
+  na.omit()
+
+
+print(ggplot(data = heart_df) + 
+  geom_point(mapping = aes(x = heart_healthy_food, y = total_bad_cholesteral)) +
+  labs(x = "Heart Healthy Foods in Grams", y = "Total Bad Cholesterol Levels") +
+  ggtitle("Heart-Healthy Foods Eaten x Bad Cholesterol Levels"))
+```
+
+So the people with the worst bad cholesterol levels did not eat any of this heart healthy food. 
+
+
+
+
+## Summary
+
+To summarize, the mediterranean diet dataset concurs with what is already known, that eating certain foods will decrease your likelihood of heart problems.
+
